@@ -1,4 +1,8 @@
 # Garmin / Monkey C build artifacts
+# Private keys
+*.der
+*.pem
+
 bin/
 build/
 dist/
