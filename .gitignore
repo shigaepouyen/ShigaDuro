@@ -1,0 +1,14 @@
+# Garmin / Monkey C build artifacts
+bin/
+build/
+dist/
+out/
+*.prg
+*.iq
+*.barrels
+*.log
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
