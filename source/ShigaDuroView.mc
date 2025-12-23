@@ -44,9 +44,11 @@ class ShigaDuroView extends WatchUi.WatchFace {
         dc.clear();
 
         // Ring geometry
-        var pen = (w < 300 ? 10 : 12).toNumber();
+        var penStd = (w < 300 ? 10 : 12).toNumber();
+        var penThin = penStd - 2;
+        var penThick = penStd + 2;
         var margin = 10;
-        var r = ((w / 2) - margin - (pen / 2)).toNumber();
+        var r = ((w / 2) - margin - (penStd / 2)).toNumber();
 
         // ---------- Time ----------
         var clock = System.getClockTime();
@@ -133,34 +135,38 @@ class ShigaDuroView extends WatchUi.WatchFace {
         var gap = 2; // Degrees
 
         // TOP - Sun
-        drawArcTrack(dc, cx, cy, r, pen, 45 + gap, 135 - gap);
-        drawArcFill(dc, cx, cy, r, pen, 45 + gap, 90 - (2 * gap), sunPct, SUNCOL);
+        drawArcTrack(dc, cx, cy, r, penStd, 45 + gap, 135 - gap);
+        drawArcFill(dc, cx, cy, r, penStd, 45 + gap, 90 - (2 * gap), sunPct, SUNCOL);
 
         // LEFT - Body Battery
-        drawArcTrack(dc, cx, cy, r, pen, 135 + gap, 225 - gap);
-        drawArcFill(dc, cx, cy, r, pen, 135 + gap, 90 - (2 * gap), bbPct, bbCol);
+        drawArcTrack(dc, cx, cy, r, penThin, 135 + gap, 225 - gap);
+        drawArcFill(dc, cx, cy, r, penThin, 135 + gap, 90 - (2 * gap), bbPct, bbCol);
 
         // BOTTOM - Steps
-        drawArcTrack(dc, cx, cy, r, pen, 225 + gap, 315 - gap);
-        drawArcFill(dc, cx, cy, r, pen, 225 + gap, 90 - (2 * gap), stepPct, STEPCOL);
+        drawArcTrack(dc, cx, cy, r, penThick, 225 + gap, 315 - gap);
+        drawArcFill(dc, cx, cy, r, penThick, 225 + gap, 90 - (2 * gap), stepPct, STEPCOL);
 
         // RIGHT - Track
-        drawArcTrack(dc, cx, cy, r, pen, 315 + gap, 45 - gap);
+        drawArcTrack(dc, cx, cy, r, penStd, 315 + gap, 45 - gap);
         // RIGHT split: VO2 lower-right (315->0), Recovery upper-right (0->45)
         var right_half_span = 45 - gap;
-        drawArcFill(dc, cx, cy, r, pen, 315 + gap, right_half_span, vo2Pct, VO2COL);
-        drawArcFill(dc, cx, cy, r, pen, 0,           right_half_span, recPct, RECCOL);
+        drawArcFill(dc, cx, cy, r, penStd, 315 + gap, right_half_span, vo2Pct, VO2COL);
+        drawArcFill(dc, cx, cy, r, penStd, 0,           right_half_span, recPct, RECCOL);
 
         // =========================================================
         // TEXT LAYOUT (prevents overlaps)
         // =========================================================
 
         // Header - fitted, centered
-        var headerY = (h * 0.18).toNumber();
-        var header = headerLeft + " | " + headerRight;
+        var headerY = (h * 0.15).toNumber();
+        drawSunIcon(dc, cx, headerY, 5, SUNCOL);
 
         dc.setColor(SUB, Graphics.COLOR_TRANSPARENT);
-        drawFittedCenteredText(dc, cx, headerY, Graphics.FONT_SYSTEM_TINY, header, (w - 16).toNumber());
+        var dateY = (h * 0.15).toNumber();
+        var dateX = (cx - 20).toNumber();
+        dc.drawText(dateX, dateY, Graphics.FONT_SYSTEM_XTINY, headerLeft, Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
+        var sunX = (cx + 20).toNumber();
+        dc.drawText(sunX, dateY, Graphics.FONT_SYSTEM_XTINY, headerRight, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
 
         // Center time
         dc.setColor(FG, Graphics.COLOR_TRANSPARENT);
@@ -169,64 +175,49 @@ class ShigaDuroView extends WatchUi.WatchFace {
 
         // Compute safe side anchors based on time width
         var timeW = dc.getTextWidthInPixels(timeStr, Graphics.FONT_NUMBER_HOT).toNumber();
-        var sidePad = 28;
+        var sidePad = 38;
         var xLeft  = (cx - (timeW / 2) - sidePad).toNumber();
         var xRight = (cx + (timeW / 2) + sidePad).toNumber();
 
         // LEFT block: Body Battery
-        var yLeftIcon = (cy - (h * 0.1)).toNumber();
-        var yLeftText = (cy + (h * 0.1)).toNumber();
-        drawHeartIcon(dc, xLeft, yLeftIcon, 6, bbCol);
+        var yLeftIcon = (cy - (h * 0.05)).toNumber();
+        var yLeftText = (cy + (h * 0.05)).toNumber();
+        drawHeartIcon(dc, xLeft, yLeftIcon, 4, bbCol);
 
         dc.setColor(FG, Graphics.COLOR_TRANSPARENT);
         dc.drawText(xLeft, yLeftText, Graphics.FONT_SYSTEM_MEDIUM, bbStr,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
         // RIGHT block: Recovery + VO2
-        var yRecIcon = (cy - (h * 0.1)).toNumber();
-        var yRecText = (cy - (h * 0.02)).toNumber();
-        var yVo2Icon = (cy + (h * 0.05)).toNumber();
-        var yVo2Text = (cy + (h * 0.13)).toNumber();
+        var yRecText = (cy - (h * 0.05)).toNumber();
+        var yVo2Text = (cy + (h * 0.05)).toNumber();
 
-        drawTimerIcon(dc, xRight, yRecIcon, 8, RECCOL);
         dc.setColor(FG, Graphics.COLOR_TRANSPARENT);
         dc.drawText(xRight, yRecText, Graphics.FONT_SYSTEM_MEDIUM, recStr,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
-        drawLungsIcon(dc, xRight, yVo2Icon, 8, 5, VO2COL);
-        dc.setColor(FG, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(xRight, yVo2Text, Graphics.FONT_SYSTEM_MEDIUM, vo2Str,
+        dc.setColor(SUB, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(xRight, yVo2Text, Graphics.FONT_SYSTEM_SMALL, vo2Str,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
         // Bottom bar: Temp, HR, Battery
-        var barY = (h * 0.82).toNumber();
+        var barY = (h * 0.70).toNumber();
         var spacing = (w / 4).toNumber();
         var x1 = (cx - spacing).toNumber();
         var x2 = cx;
         var x3 = (cx + spacing).toNumber();
 
-        // Temp
-        drawThermometerIcon(dc, x1 - 15, barY, 12, SUB);
-        dc.drawText(x1 + 10, barY, Graphics.FONT_SYSTEM_MEDIUM, tempStr, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
-
-        // HR
-        drawHeartIcon(dc, x2 - 15, barY, 5, RED);
-        dc.drawText(x2 + 10, barY, Graphics.FONT_SYSTEM_MEDIUM, hrStr, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
-
-        // Battery
-        var battPct = (battVal != null) ? (battVal / 100.0) : 0.0;
-        drawBatteryIcon(dc, x3 - 15, barY, 20, 10, battPct, SUB);
-        dc.drawText(x3 + 15, barY, Graphics.FONT_SYSTEM_MEDIUM, battStr, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+        // Temp, HR, Battery as a single line
+        var barStr = tempStr + " | " + hrStr + " | " + battStr;
+        dc.setColor(SUB, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cx, barY, Graphics.FONT_SYSTEM_MEDIUM, barStr, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
 
         // Steps % (bottom-center)
-        var stepsY = (h * 0.90).toNumber();
-        dc.setColor(STEPCOL, Graphics.COLOR_TRANSPARENT);
-        drawFootIcon(dc, (cx - 18).toNumber(), stepsY, 5);
-
+        var stepsY = (h * 0.78).toNumber();
         dc.setColor(FG, Graphics.COLOR_TRANSPARENT);
-        dc.drawText((cx).toNumber(), stepsY, Graphics.FONT_SYSTEM_MEDIUM, stepPctStr,
-            Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(cx, stepsY, Graphics.FONT_SYSTEM_XTINY, stepPctStr,
+            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
     // =========================================================
@@ -412,47 +403,17 @@ class ShigaDuroView extends WatchUi.WatchFace {
         dc.drawLine((x + (r * 2)).toNumber(), y, px, py);
     }
 
-    function drawFootIcon(dc, x, y, r) {
-        dc.fillRectangle((x - (r * 0.6)).toNumber(), (y - (r * 0.3)).toNumber(),
-                         (r * 1.2).toNumber(), (r * 1.6).toNumber());
-        dc.fillCircle((x + (r * 0.8)).toNumber(), (y - (r * 0.4)).toNumber(), (r * 0.35).toNumber());
-    }
-
-    function drawLungsIcon(dc, x, y, w, h, color) {
+    function drawSunIcon(dc, x, y, r, color) {
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
         dc.setPenWidth(2);
-        dc.drawArc(x, y, w, Graphics.ARC_COUNTER_CLOCKWISE, 45, 135);
-        dc.drawArc(x, y, w, Graphics.ARC_COUNTER_CLOCKWISE, 225, 315);
-        dc.drawLine(x, y - w, x, y + h);
-    }
+        dc.fillCircle(x, y, r);
 
-    function drawTimerIcon(dc, x, y, r, color) {
-        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(2);
-        dc.drawCircle(x, y, r);
-        dc.drawLine(x, y, x, y - (r / 2));
-        dc.drawLine(x, y, x + (r / 2), y);
-    }
-
-    function drawThermometerIcon(dc, x, y, h, color) {
-        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(2);
-        var r = h / 4;
-        dc.drawCircle(x, y + r, r);
-        dc.drawLine(x, y, x, y - h);
-        dc.fillCircle(x, y + r, r / 2);
-    }
-
-     function drawBatteryIcon(dc, x, y, w, h, battPct, color) {
-        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(2);
-        dc.drawRectangle(x, y, w, h);
-        dc.fillRectangle(x + (w/10), y - 2, w - (w/5), 2);
-
-        var battFill = (w - 4) * battPct;
-        if (battFill > 0) {
-            dc.fillRectangle(x + 2, y + 2, battFill, h - 4);
-        }
+        var rayLen = r * 0.8;
+        var outerR = r + rayLen;
+        dc.drawLine(x, y - r, x, y - outerR); // N
+        dc.drawLine(x, y + r, x, y + outerR); // S
+        dc.drawLine(x - r, y, x - outerR, y); // W
+        dc.drawLine(x + r, y, x + outerR, y); // E
     }
 
     function formatClock(m) {
