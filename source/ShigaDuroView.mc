@@ -47,6 +47,7 @@ class ShigaDuroView extends WatchUi.WatchFace {
         var penStd = (w < 300 ? 10 : 12).toNumber();
         var penThin = penStd - 2;
         var penThick = penStd + 2;
+        var penSuperThin = penThin - 2; // For the less important sun gauge
         var margin = 10;
         var r = ((w / 2) - margin - (penStd / 2)).toNumber();
 
@@ -135,8 +136,8 @@ class ShigaDuroView extends WatchUi.WatchFace {
         var gap = 2; // Degrees
 
         // TOP - Sun
-        drawArcTrack(dc, cx, cy, r, penThin, 45 + gap, 135 - gap);
-        drawArcFill(dc, cx, cy, r, penThin, 45 + gap, 90 - (2 * gap), sunPct, SUNCOL);
+        drawArcTrack(dc, cx, cy, r, penSuperThin, 45 + gap, 135 - gap);
+        drawArcFill(dc, cx, cy, r, penSuperThin, 45 + gap, 90 - (2 * gap), sunPct, SUNCOL);
 
         // LEFT - Body Battery
         drawArcTrack(dc, cx, cy, r, penThin, 135 + gap, 225 - gap);
@@ -180,19 +181,22 @@ class ShigaDuroView extends WatchUi.WatchFace {
         drawHeartIcon(dc, xLeft, yLeftIcon, 4, bbCol);
 
         dc.setColor(FG, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(xLeft, yLeftText, Graphics.FONT_SYSTEM_MEDIUM, bbStr,
+        // Move text towards the center for better spacing, leaving icon in place.
+        var xLeftTextPos = xLeft + 4;
+        dc.drawText(xLeftTextPos, yLeftText, Graphics.FONT_SYSTEM_MEDIUM, bbStr,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
         // RIGHT block: Recovery + VO2
         var yRecText = (cy - (h * 0.05)).toNumber();
         var yVo2Text = (cy + (h * 0.05)).toNumber();
+        var xRightTextPos = xRight - 4; // Move block towards the center
 
         dc.setColor(FG, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(xRight, yRecText, Graphics.FONT_SYSTEM_MEDIUM, recStr,
+        dc.drawText(xRightTextPos, yRecText, Graphics.FONT_SYSTEM_MEDIUM, recStr,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
         dc.setColor(SUB, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(xRight, yVo2Text, Graphics.FONT_SYSTEM_SMALL, vo2Str,
+        dc.drawText(xRightTextPos, yVo2Text, Graphics.FONT_SYSTEM_SMALL, vo2Str,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
         // Bottom bar: Temp, HR, Battery
@@ -209,7 +213,7 @@ class ShigaDuroView extends WatchUi.WatchFace {
 
 
         // Steps % (bottom-center)
-        var stepsY = (h * 0.90).toNumber(); // Move steps % down to anchor it to the bottom arc
+        var stepsY = (h * 0.90).toNumber() + 4; // Move steps % down to anchor it to the bottom arc
         dc.setColor(FG, Graphics.COLOR_TRANSPARENT);
         dc.drawText(cx, stepsY, Graphics.FONT_SYSTEM_XTINY, stepPctStr,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
