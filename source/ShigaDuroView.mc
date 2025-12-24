@@ -135,8 +135,8 @@ class ShigaDuroView extends WatchUi.WatchFace {
         var gap = 2; // Degrees
 
         // TOP - Sun
-        drawArcTrack(dc, cx, cy, r, penStd, 45 + gap, 135 - gap);
-        drawArcFill(dc, cx, cy, r, penStd, 45 + gap, 90 - (2 * gap), sunPct, SUNCOL);
+        drawArcTrack(dc, cx, cy, r, penThin, 45 + gap, 135 - gap);
+        drawArcFill(dc, cx, cy, r, penThin, 45 + gap, 90 - (2 * gap), sunPct, SUNCOL);
 
         // LEFT - Body Battery
         drawArcTrack(dc, cx, cy, r, penThin, 135 + gap, 225 - gap);
@@ -159,14 +159,9 @@ class ShigaDuroView extends WatchUi.WatchFace {
 
         // Header - fitted, centered
         var headerY = (h * 0.15).toNumber();
-        drawSunIcon(dc, cx, headerY, 5, SUNCOL);
-
+        var headerStr = headerLeft + " | " + headerRight;
         dc.setColor(SUB, Graphics.COLOR_TRANSPARENT);
-        var dateY = (h * 0.15).toNumber();
-        var dateX = (cx - 20).toNumber();
-        dc.drawText(dateX, dateY, Graphics.FONT_SYSTEM_XTINY, headerLeft, Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
-        var sunX = (cx + 20).toNumber();
-        dc.drawText(sunX, dateY, Graphics.FONT_SYSTEM_XTINY, headerRight, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(cx, headerY, Graphics.FONT_SYSTEM_XTINY, headerStr, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
         // Center time
         dc.setColor(FG, Graphics.COLOR_TRANSPARENT);
@@ -175,7 +170,7 @@ class ShigaDuroView extends WatchUi.WatchFace {
 
         // Compute safe side anchors based on time width
         var timeW = dc.getTextWidthInPixels(timeStr, Graphics.FONT_NUMBER_HOT).toNumber();
-        var sidePad = 38;
+        var sidePad = 42; // Increased to move side blocks inwards, away from the ring
         var xLeft  = (cx - (timeW / 2) - sidePad).toNumber();
         var xRight = (cx + (timeW / 2) + sidePad).toNumber();
 
@@ -214,7 +209,7 @@ class ShigaDuroView extends WatchUi.WatchFace {
 
 
         // Steps % (bottom-center)
-        var stepsY = (h * 0.78).toNumber();
+        var stepsY = (h * 0.90).toNumber(); // Move steps % down to anchor it to the bottom arc
         dc.setColor(FG, Graphics.COLOR_TRANSPARENT);
         dc.drawText(cx, stepsY, Graphics.FONT_SYSTEM_XTINY, stepPctStr,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
@@ -403,18 +398,6 @@ class ShigaDuroView extends WatchUi.WatchFace {
         dc.drawLine((x + (r * 2)).toNumber(), y, px, py);
     }
 
-    function drawSunIcon(dc, x, y, r, color) {
-        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
-        dc.setPenWidth(2);
-        dc.fillCircle(x, y, r);
-
-        var rayLen = r * 0.8;
-        var outerR = r + rayLen;
-        dc.drawLine(x, y - r, x, y - outerR); // N
-        dc.drawLine(x, y + r, x, y + outerR); // S
-        dc.drawLine(x - r, y, x - outerR, y); // W
-        dc.drawLine(x + r, y, x + outerR, y); // E
-    }
 
     function formatClock(m) {
         var i = Gregorian.info(m, Time.FORMAT_SHORT);
